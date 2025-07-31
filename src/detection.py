@@ -143,9 +143,7 @@ def detect(prompt: str, log_file_path: str) -> dict:
         task_id = parse_submission_response(submission_response.text)
         if not task_id:
             raise Exception("Failed to extract task ID from submission response")
-        
-        print(f"Submitted text for analysis, task ID: {task_id}")
-        
+                
         # Step 2: Poll for results
         query_headers = UserAgentManager.get_query_headers()
         query_data = json.dumps({"id": task_id})

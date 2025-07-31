@@ -16,7 +16,7 @@ timestamp = time.strftime("%Y%m%d-%H%M%S")
 log_file_path = os.path.join(logs_dir, f"detection_log_{timestamp}.jsonl")
 
 def get_detection_score(comp, log_file_path):
-  return (detect(comp, log_file_path).get("score", 0) * 2) ** 2
+  return ((1 - detect(comp, log_file_path)['score']) * 2) ** 2
 
 def get_llm_score(prompt, comp):
   score = llm_evaluator.evaluate(prompt, comp)
