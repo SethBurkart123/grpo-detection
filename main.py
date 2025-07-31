@@ -5,9 +5,10 @@ import wandb
 
 from src.reward import custom_reward_fn
 
+model_name = "Qwen/Qwen3-0.6B"
+
 def main():
     # Load a pre-trained causal language model and its tokenizer
-    model_name = "Qwen/Qwen3-0.6B"
     device = torch.device("mps")
     model = AutoModelForCausalLM.from_pretrained(model_name)
     model.to(device)
@@ -159,7 +160,7 @@ def main():
     wandb.init(
       project="grpo-training",
       config={
-        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "model": model_name,
         "learning_rate": 3e-4,
         "max_steps": 100,
         "scheduler": "constant_with_warmup",
@@ -171,7 +172,7 @@ def main():
     config = GRPOConfig(
         learning_rate=3e-6,
         output_dir="output",
-        max_steps=612,
+        max_steps=100,
         importance_sampling_level="sequence",
         lr_scheduler_type="constant_with_warmup",
         report_to=["wandb"],
