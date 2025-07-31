@@ -9,9 +9,9 @@ model_name = "Qwen/Qwen3-0.6B"
 
 def main():
     # Load a pre-trained causal language model and its tokenizer
-    device = torch.device("mps")
-    model = AutoModelForCausalLM.from_pretrained(model_name)
-    model.to(device)
+    device = torch.device("cuda")
+    #model = AutoModelForCausalLM.from_pretrained(model_name)
+    #model.to(device)
 
     # Create a minimal dummy dataset. Each sample must include a "prompt" column.
     train_dataset = [
