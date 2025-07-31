@@ -1,6 +1,6 @@
-from concurrent.futures import ThreadPoolExecutor
 import time
 import os
+from ripplex import flow, loop
 
 from src.llm_eval import LLMEvaluator
 from src.detection import detect
@@ -23,33 +23,31 @@ def get_llm_score(prompt, comp):
   max_possible = sum(check.score_range[1] for check in llm_evaluator.checks)
   return score / max_possible
 
+@flow
 def parallel_scoring(prompt, comp, log_file_path):
   """Run detection and LLM scoring in parallel and return combined score."""
-  with ThreadPoolExecutor(max_workers=2) as executor:
-    # Submit both tasks
-    detection_future = executor.submit(get_detection_score, comp, log_file_path)
-    #llm_future = executor.submit(get_llm_score, prompt, comp)
+  # These run in PARALLEL automatically with @flow
+  detection_score = get_detection_score(comp, log_file_path)  # 0-4
+  #llm_score = get_llm_score(prompt, comp)  # 0-1
 
-    # Get results
-    # 0-4
-    detection_score = detection_future.result()
-    # 0-1
-    #llm_score = llm_future.result()
+  #print(f"Detection score: {detection_score} --- LLM score: {llm_score}", end="--- ")
+  print(f"Detection score: {detection_score}")
 
-    #print(f"Detection score: {detection_score} --- LLM score: {llm_score}", end="--- ")
-    print(f"Detection score: {detection_score}")
+  # Combine scores
+  #return (detection_score * llm_score) / 4
+  return detection_score / 4
 
-    # Combine scores
-    #return (detection_score * llm_score) / 4
-    return detection_score / 4
-
-# Then modify your custom_reward_fn to use this:
 def custom_reward_fn(prompts, completions, **kwargs):
   """Custom reward function that runs detection and LLM scoring in parallel."""
-  rewards = []
   print("")
-  for prompt, comp in zip(prompts, completions):
+  
+  # Process all prompt/completion pairs in parallel
+  @loop(zip(prompts, completions))
+  def score_pair(prompt_comp):
+    prompt, comp = prompt_comp
+    # log_file_path is automatically captured from outer scope
     score = parallel_scoring(prompt, comp, log_file_path)
     print(f"Score: {score}")
-    rewards.append(score)
-  return rewards
+    return score
+  
+  return score_pair
